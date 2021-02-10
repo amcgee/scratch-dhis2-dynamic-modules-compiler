@@ -1,0 +1,2 @@
+(self.webpackChunkshell=self.webpackChunkshell||[]).push([[46],{46:(e,l,n)=>{"use strict";n.r(l);var t=n(7458),r=n(7865),s=n.n(r),h=n(1704);n.n(h)().render(s().createElement(t.Shell,null),document.getElementById("root"))}}]);
+//# sourceMappingURL=46.2b27d78b738cbb5f17ae.js.map
