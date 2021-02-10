@@ -1,4 +1,3 @@
-const { web } = require('webpack')
 const webpack = require('webpack')
 
 const compiler = webpack(require('./webpack.config.js'))

@@ -2,7 +2,11 @@
   "name": "@dhis2/app-compiler",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT",
+  "author": {
+    "name": "Austin McGee",
+    "email": "austin@dhis2.org"
+  },
+  "license": "BSD-3-Clause",
   "dependencies": {
     "@dhis2/cli-app-scripts": "^5.5.1",
     "babel-loader": "^8.2.2",
