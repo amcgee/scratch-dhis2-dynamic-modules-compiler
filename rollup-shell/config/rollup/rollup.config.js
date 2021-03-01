@@ -1,5 +1,4 @@
 import path from "path";
-import pkg from "../../package.json";
 
 // Helpers
 import configureOutput from "./configureOutput";
@@ -13,45 +12,60 @@ import postcss from "./plugins/postcss";
 import importMap from "./plugins/importMap";
 import replace from "./plugins/replace";
 import copy from "./plugins/copy";
+// import dynamicImportVars from '@rollup/plugin-dynamic-import-vars'
 
 // Dependencies to build and mark as external
-const deps = [
-  "react",
-  "react-dom",
-  "styled-jsx/style",
-  "@dhis2/d2-i18n",
-  "@dhis2/app-runtime",
-  "@dhis2/ui",
-  "moment",
-];
+const inputs = {
+  "react": "react",
+  "react-dom": "react-dom",
+  "styled-jsx/style": "styled-jsx/dist/style.js",
+  "@dhis2/d2-i18n": "@dhis2/d2-i18n",
+  "@dhis2/app-runtime": "@dhis2/app-runtime",
+  "@dhis2/ui": "@dhis2/ui",
+  "moment": "moment",
+  "d2": "../../../../d2/src/d2.js",
+  ":dhis2/shell": "./src/index.js",
+  // ":dhis2/app": "../../data-visualizer-app/packages/app/src/AppWrapper.js",
+  // "@dhis2/data-visualizer-plugin": "../../data-visualizer-app/packages/plugin/src/index.js",
+};
+
+const inputNames = Object.keys(inputs)
 
 const baseDir = "./dist";
 const baseScriptDir = path.join(baseDir, "static/js")
 
-const bundler = (name, input, dir) => (mode = "development") => {
+const bundler = (input, dir) => (mode = "development") => {
+  const name = typeof input === 'string' ? input : Object.keys(input)[0]
   return {
-    input: /styled-jsx/.exec(name) ? "styled-jsx/dist/style.js" : input,
-    output: configureOutput({ name, dir, mode, deps }),
+    input,
+    output: configureOutput({ name, dir, mode, deps: inputNames }),
     plugins: [
-      nodeResolve(),
+      nodeResolve({
+        mainFields: ['browser', 'module', 'main'],
+        preferBuiltins: false
+      }),
       replace({ mode }),
       json(),
       commonjs({
         include: /node_modules/,
       }),
       babel({ mode }),
+      // dynamicImportVars(),
       postcss({ mode }),
       copy({ baseDir }),
       importMap({ name, dir, mode, baseScriptDir }),
     ],
-    external: deps.filter((dep) => dep !== name),
+    external: inputNames.filter((dep) => dep !== name), //.concat(['d2']) TODO: build umd d2 with app-local version -
   };
 };
 
-const bundlers = [
-  bundler(':dhis2/' + pkg.name, "./src/index.js", baseScriptDir),
-  ...deps.map((dep) => bundler(dep, dep, path.join(baseScriptDir, "vendor"))),
-];
+const bundlers = Object.entries(inputs).map(input => 
+  bundler({ [input[0]]: input[1] }, input[0][0] === ':' ? baseScriptDir : path.join(baseScriptDir, 'vendor') ))
+
+bundlers.push(bundler({
+  ":dhis2/data-visualizer/app": "../../data-visualizer-app/packages/app/src/AppWrapper.js",
+  ":dhis2/data-visualizer/plugin": "../../data-visualizer-app/packages/app/src/plugin/index.js",
+}, baseScriptDir))
 
 const modes = process.env.NODE_ENV
   ? [process.env.NODE_ENV]

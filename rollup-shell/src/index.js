@@ -1,7 +1,7 @@
 import AppAdapter from '@dhis2/app-adapter'
 
 import { CssReset } from '@dhis2/ui'
-import React from 'react'
+import React, { Suspense } from 'react'
 
 const appConfig = {
     url:
@@ -10,11 +10,15 @@ const appConfig = {
     appName: process.env.REACT_APP_DHIS2_APP_NAME || '',
 }
 
+const LazyApp = React.lazy(() => import(':dhis2/app'))
+
 const Shell = ({ children }) => 
     <>
         <CssReset />
         <AppAdapter {...appConfig}>
-            {children}
+            <Suspense fallback={<div>...</div>}>
+                <LazyApp />
+            </Suspense>
         </AppAdapter>
     </>
 
